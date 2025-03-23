@@ -329,6 +329,7 @@ body {
 const params = new URLSearchParams(window.location.search);
 const icsUrl = params.get('icsUrl') || ''; // Fallback URL if not provided
 
+
 function getCachedICS(url) {
   const cacheKey = 'icsCache';
   const cacheExpiryKey = 'icsCacheExpiry';
@@ -340,27 +341,9 @@ function getCachedICS(url) {
     return Promise.resolve(localStorage.getItem(cacheKey));
   }
 
-  // Set up request options similar to your example
-  let requestOptions = {
-    method: 'GET', // For fetching the ICS file, GET is appropriate
-    headers: {
-        "Access-Control-Allow-Origin": "*", // or restrict to your domain
-      'Accept': 'text/calendar',
-      'Content-Type': 'text/calendar',
-      "Access-Control-Allow-Headers": "Content-Type",
-        
-    },
-    mode: 'cors', // Handle CORS
-  };
-
-  // If not cached, fetch the data using the request options
-  return fetch(url, requestOptions)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok: ' + response.statusText);
-      }
-      return response.text();
-    })
+  // If not, fetch the data
+  return fetch(url)
+    .then(response => response.text())
     .then(data => {
       // Cache the data and set expiry (e.g., 1 hour from now)
       localStorage.setItem(cacheKey, data);
@@ -372,7 +355,6 @@ function getCachedICS(url) {
       throw err;
     });
 }
-
 
 
 document.getElementById('saveImageBtn').addEventListener('click', function() {
