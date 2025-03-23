@@ -507,7 +507,6 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         weekends: document.getElementById('toggleWeekend').checked,
         events: function(fetchInfo, successCallback, failureCallback) {
             getCachedICS(icsUrl)
-            .then(response => response.text())
             .then(data => {
               const jcalData = ICAL.parse(data);
               const comp = new ICAL.Component(jcalData);
