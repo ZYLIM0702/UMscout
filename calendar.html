@@ -330,7 +330,7 @@ const params = new URLSearchParams(window.location.search);
 const icsUrl = params.get('icsUrl') || ''; // Fallback URL if not provided
 
 
-function getCachedICS(url) {
+async function getCachedICS(url) {
   const cacheKey = 'icsCache';
   const cacheExpiryKey = 'icsCacheExpiry';
   const now = new Date().getTime();
@@ -338,11 +338,12 @@ function getCachedICS(url) {
 
   // Check if cached data exists and is still valid (e.g., valid for 1 hour)
   if (localStorage.getItem(cacheKey) && cacheExpiry && now < parseInt(cacheExpiry, 10)) {
-    return Promise.resolve(localStorage.getItem(cacheKey));
+    return localStorage.getItem(cacheKey);
   }
 
   // If not, fetch the data
-  return fetch(url)
+  return fetch(url,{mode: 'no-cors',headers: {
+    'Content-Type': 'text/calendar'}})
     .then(response => response.text())
     .then(data => {
       // Cache the data and set expiry (e.g., 1 hour from now)
@@ -352,7 +353,7 @@ function getCachedICS(url) {
     })
     .catch(err => {
       console.error('Error loading ICS file', err);
-      throw err;
+      return ''; // Return empty string on error
     });
 }
 
@@ -507,6 +508,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         weekends: document.getElementById('toggleWeekend').checked,
         events: function(fetchInfo, successCallback, failureCallback) {
             getCachedICS(icsUrl)
+            .then(response => response.text())
             .then(data => {
               const jcalData = ICAL.parse(data);
               const comp = new ICAL.Component(jcalData);
