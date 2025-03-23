@@ -506,8 +506,8 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         slotMaxTime: "19:00:00",
         expandRows: true,
         weekends: document.getElementById('toggleWeekend').checked,
-        events: function(fetchInfo, successCallback, failureCallback) {
-            getCachedICS(icsUrl)
+        events: async function(fetchInfo, successCallback, failureCallback) {
+            const data = await getCachedICS(icsUrl)
             .then(response => response.text())
             .then(data => {
               const jcalData = ICAL.parse(data);
