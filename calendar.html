@@ -528,7 +528,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
   }
 
   // Capture the calendar element
-  html2canvas(calendarEl, { scale: 20, backgroundColor: null }).then(canvas => {
+  html2canvas(calendarEl, { scale: 2, backgroundColor: null }).then(canvas => {
     // Restore the header after capturing
     if (headerEl) {
       headerEl.style.visibility = '';
@@ -564,18 +564,17 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     croppedCanvas.height = height;
     croppedCtx.putImageData(ctx.getImageData(0, top, canvas.width, height), 0, 0);
 
-    // Convert cropped canvas to Base64
-    const base64Image = croppedCanvas.toDataURL('image/png').replace('data:image/png;base64,', '');
-    window.saveImage = {
-    postMessage: function(base64Image) {
-      if (typeof window.onSaveImage === 'function') {
-        window.onSaveImage(base64Image);
-      } else {
-        console.error("onSaveImage callback is not defined.");
-      }
-    }
-  };
+    // Generate timestamp for filename
+    const timestamp = new Date().getTime();
     
+    // Convert cropped canvas to a data URL and trigger download
+    const base64Image = croppedCanvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = base64Image;
+    link.download = `UMscout_Timetable_${timestamp}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   });
 });
 
