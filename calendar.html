@@ -516,10 +516,11 @@ function getCacheICS(url, cacheDuration = 60) {
       throw error;
     });
 }
+window._base64Image = "";
 
-function getImageData(base64Image) {
-  return base64Image;
-  }
+function getImageData() {
+  return window._base64Image || "";
+}
 
 document.getElementById('saveImageBtn').addEventListener('click', function() {
   const calendarEl = document.getElementById('calendar');
@@ -578,8 +579,8 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 if (window.ImageChannel && window.ImageChannel.postMessage) {
   window.ImageChannel.postMessage(base64Image);
 }
-getImageData(base64Image);
-    // link.href = base64Image;
+window._base64Image = base64Image;
+// link.href = base64Image;
     // link.download = `UMscout_Timetable_${timestamp}.png`;
     // document.body.appendChild(link);
     // link.click();
