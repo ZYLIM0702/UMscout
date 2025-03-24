@@ -517,7 +517,6 @@ function getCacheICS(url, cacheDuration = 3600) {
     });
 }
 
-    
 document.getElementById('saveImageBtn').addEventListener('click', function() {
   const calendarEl = document.getElementById('calendar');
   const headerEl = calendarEl.querySelector('.fc-header-toolbar');
@@ -565,10 +564,23 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     croppedCtx.putImageData(ctx.getImageData(0, top, canvas.width, height), 0, 0);
 
     // Convert cropped canvas to Base64
-    const base64Image = croppedCanvas.toDataURL('image/png').replace('data:image/png;base64,', '');
-    print()
+    const base64Image = croppedCanvas.toDataURL('image/png');
 
-    window.saveImage.postMessage(base64Image);
+    // Check if the device is iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if (isIOS) {
+      // Download image directly
+      const link = document.createElement('a');
+      link.href = base64Image;
+      link.download = 'calendar.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      // Send base64 image via postMessage
+      window.saveImage.postMessage(base64Image.replace('data:image/png;base64,', ''));
+    }
   });
 });
 
