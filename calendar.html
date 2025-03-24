@@ -566,13 +566,9 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 
     // Convert cropped canvas to Base64
     const base64Image = croppedCanvas.toDataURL('image/png').replace('data:image/png;base64,', '');
+    print()
 
-    // Send the Base64 string to Flutter
-    if (window.saveImage) {
-      window.saveImage.postMessage(base64Image);
-    } else {
-      console.error('Flutter JavaScript channel not available.');
-    }
+    window.saveImage.postMessage(base64Image);
   });
 });
 
