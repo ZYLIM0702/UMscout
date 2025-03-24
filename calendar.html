@@ -223,8 +223,8 @@ body {
     .fc .fc-timegrid-slot-minor { border-top-style: none; }
     .fc-theme-standard td, .fc-theme-standard th { border: 1px solid #e5e5e5; }
     .fc-timegrid-axis {
-      background-color: #2a78ff !important;
-      color: #fff !important;
+      background-color: #2a78ff;
+      color: #fff ;
       font-weight: bold;
     }
     .fc-direction-ltr .fc-timegrid-slot-label-frame {
@@ -234,6 +234,9 @@ body {
       margin: 15px;
     }
     .fc-direction-ltr .fc-timegrid-col-events { margin: 1px 2px 0px 2px; }
+    .fc-timegrid-event-harness-inset .fc-timegrid-event, .fc-timegrid-event.fc-event-mirror, .fc-timegrid-more-link{
+      box-shadow: none;
+    }
   </style>
 </head>
 <body>
@@ -299,6 +302,21 @@ body {
               <span class="slider"></span>
             </label>
           </div>
+            <!-- New Color Theme Dropdown -->
+  <div style="margin: 10px;">
+    <select id="colorThemeDropdown" style="padding: 6px; border-radius: 15px; border: none;">
+      <option value="default">Default</option>
+      <option value="classic">Classic</option>
+      <option value="beigeTan">Beige Tan</option>
+      <option value="tealOrange">Teal Orange</option>
+      <option value="midnightPurple">Midnight Purple</option>
+      <option value="forestGreen">Forest Green</option>
+      <option value="blackWhite">Black White</option>
+
+    </select>
+    
+  </div>
+
         </div>
       </div>
       
@@ -328,6 +346,104 @@ body {
   
 
   <script>
+
+    // Define theme presets – for now, we only have "classic"
+    const themes = {
+  classic: {
+    calendarBackground: '#222831',
+    textColor: '#fcca46',
+    headerBackground: '#333333',
+    timegridBackground: '#222831',
+    eventBackground: '#fcca46',
+    eventTextColor: '#222831'
+  },
+  default: {
+    calendarBackground: '',
+    textColor: '',
+    headerBackground: '',
+    timegridBackground: '',
+    eventBackground: '',
+    eventTextColor: ''
+  },
+  beigeTan: {
+    calendarBackground: '#f5f5dc',
+    textColor: '#8b5e3c',
+    headerBackground: '#d2b48c',
+    timegridBackground: '#faebd7',
+    eventBackground: '#8b5e3c',
+    eventTextColor: '#fff'
+  },
+  tealOrange: {
+    calendarBackground: '#003d59',
+    textColor: '#ffa500',
+    headerBackground: '#414a4f',
+    timegridBackground: '#003d59',
+    eventBackground: '#ffaa45',
+    eventTextColor: '#003d59'
+  },
+  midnightPurple: {
+    calendarBackground: '#2c003e',
+    textColor: '#d8b5ff',
+    headerBackground: '#3b005e',
+    timegridBackground: '#4a0072',
+    eventBackground: '#d8b5ff',
+    eventTextColor: '#2c003e'
+  },
+  forestGreen: {
+    calendarBackground: '#1b5e20',
+    textColor: '#c8e6c9',
+    headerBackground: '#2e7d32',
+    timegridBackground: '#388e3c',
+    eventBackground: '#c8e6c9',
+    eventTextColor: '#1b5e20'
+  },
+  blackWhite: {
+    calendarBackground: '#000000',
+    textColor: '#ffffff',
+    headerBackground: '#1a1a1a',
+    timegridBackground: '#000000',
+    eventBackground: '#ffffff',
+    eventTextColor: '#000000'
+  }
+
+};
+
+// Helper function to apply the selected theme
+function applyTheme(themeKey) {
+  const theme = themes[themeKey];
+  const calendarEl = document.querySelector('.fc-view-harness.fc-view-harness-active');
+
+  // Override the overall calendar background if specified
+  if (theme.calendarBackground) {
+    calendarEl.style.backgroundColor = theme.calendarBackground;
+  } else {
+    calendarEl.style.backgroundColor = '';
+  }
+
+  // Update header cells background and text color
+  document.querySelectorAll('.fc-col-header-cell').forEach(cell => {
+    cell.style.backgroundColor = theme.headerBackground || '';
+    cell.style.color = theme.textColor || '';
+  });
+  document.querySelectorAll('.fc-timegrid-axis').forEach(cell => {
+    cell.style.backgroundColor = theme.headerBackground || '';
+    cell.style.color = theme.textColor || '';
+  });
+  document.querySelectorAll('.fc-direction-ltr .fc-timegrid-slot-label-frame').forEach(cell => {
+    cell.style.color = theme.headerBackground || '';
+    cell.style.color = theme.textColor || '';
+  });
+
+  // Update the timegrid area background (adjust selector as needed)
+  document.querySelectorAll('.fc-timegrid-slots').forEach(slot => {
+    slot.style.backgroundColor = theme.timegridBackground || '';
+  });
+
+  
+
+}
+
+
 
 const urlParams = new URLSearchParams(window.location.search);
 const icsUrl = urlParams.get('icsUrl');
@@ -529,6 +645,10 @@ function makeColorPaler(hex, factor = 0.3) {
     calendar.refetchEvents();
     updateCalendarDimensions();
     calendar.updateSize();
+      // Reapply the classic theme styles if selected.
+  const themeKey = document.getElementById('colorThemeDropdown').value;
+  applyTheme(themeKey);
+
   },
 
         allDaySlot: false,
@@ -566,10 +686,43 @@ function makeColorPaler(hex, factor = 0.3) {
                     let occ = (description.match(/OCC\d+/) || [""])[0];
                     let lecturer = (description.match(/Lecturer: (.*)/) || ["", ""])[1];
                     let location = vevent.component.getFirstPropertyValue("location") || "";
-                    let eventColor = vevent.component.getFirstPropertyValue("color")
-                      ? `#${vevent.component.getFirstPropertyValue("color").slice(2)}`
-                      : "#2196F3";
-                      eventColorPale = makeColorPaler(eventColor, 0.2);
+    // Check if a color theme override is active
+    let selectedTheme = document.getElementById('colorThemeDropdown')
+                          ? document.getElementById('colorThemeDropdown').value
+                          : "default";
+    let eventColor;
+    if (selectedTheme === "classic") {
+  eventColor = "#fcca46"; // Classic yellow
+  eventColorPale = eventColor;
+
+} else if (selectedTheme === "beigeTan") {
+  eventColor = "#8b5e3c"; // Warm brown
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+
+} else if (selectedTheme === "tealOrange") {
+  eventColor = "#ffaa45"; // Bright orange
+  eventColorPale = eventColor;
+
+} else if (selectedTheme === "midnightPurple") {
+  eventColor = "#d8b5ff"; // Soft pastel purple
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+
+} else if (selectedTheme === "forestGreen") {
+  eventColor = "#c8e6c9"; // Light green
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+
+} else if (selectedTheme === "blackWhite") {
+  eventColor = "#ffffff"; // White
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+
+} else {
+  eventColor = vevent.component.getFirstPropertyValue("color")
+               ? `#${vevent.component.getFirstPropertyValue("color").slice(2)}`
+               : "#2196F3"; // Default blue
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+}
+
+    // Optionally, make the color a bit paler for the background
 
                     let eventtype = vevent.component.getFirstPropertyValue("categories") || "";
                     
@@ -589,10 +742,37 @@ function makeColorPaler(hex, factor = 0.3) {
                     let occ = (description.match(/OCC\d+/) || [""])[0];
                     let lecturer = (description.match(/Lecturer: (.*)/) || ["", ""])[1];
                     let location = vevent.component.getFirstPropertyValue("location") || "";
-                    let eventColor = vevent.component.getFirstPropertyValue("color")
-                      ? `#${vevent.component.getFirstPropertyValue("color").slice(2)}`
-                      : "#2196F3";
-                    eventColorPale = makeColorPaler(eventColor, 0.2);
+    // Check if a color theme override is active
+    let selectedTheme = document.getElementById('colorThemeDropdown')
+                          ? document.getElementById('colorThemeDropdown').value
+                          : "default";
+    let eventColor;
+    if (selectedTheme === "classic") {
+  eventColor = "#fcca46"; // Classic yellow
+  eventColorPale = eventColor;
+
+} else if (selectedTheme === "beigeTan") {
+  eventColor = "#8b5e3c"; // Warm brown
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+
+} else if (selectedTheme === "tealOrange") {
+  eventColor = "#ffa500"; // Bright orange
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+
+} else if (selectedTheme === "midnightPurple") {
+  eventColor = "#d8b5ff"; // Soft pastel purple
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+
+} else if (selectedTheme === "forestGreen") {
+  eventColor = "#c8e6c9"; // Light green
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+
+} else {
+  eventColor = vevent.component.getFirstPropertyValue("color")
+               ? `#${vevent.component.getFirstPropertyValue("color").slice(2)}`
+               : "#2196F3"; // Default blue
+  eventColorPale = makeColorPaler(eventColor, 0.2);
+}
 
                     let eventtype = vevent.component.getFirstPropertyValue("categories") || "";
 
@@ -619,41 +799,48 @@ function makeColorPaler(hex, factor = 0.3) {
             });
         },
         eventDidMount: function (info) {
+          const themeKey = document.getElementById('colorThemeDropdown').value;
+          const theme = themes[themeKey] || themes.default;
+          console.log(themeKey);
+
             info.el.style.borderRadius = '14px';
 info.el.style.padding = '8px';
-info.el.style.border = 'none';
-info.el.style.color = '#000';
 info.el.style.overflow = 'hidden';
-  const { courseCode, courseName, occ, lecturer, location, eventtype,eventColor } = info.event.extendedProps;
+    info.el.style.border = 'none';
+
+    // Deconstruct extended props from the event (from ICS parsing)
+    const { courseCode, courseName, occ, lecturer, location, eventtype, eventColor } = info.event.extendedProps;
+        // Build event content – override event colors if a theme is active (e.g. classic)
+        let usedEventColor = theme.eventBackground ? theme.eventBackground : eventColor;
+    let usedTextColor = theme.eventTextColor ? theme.eventTextColor : '#000';
+
   // Build the content as a flex container with two parts: top and bottom.
   let content = `<div style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">`;
   
   // Top section for course info and OCC (left aligned)
-  content += `<div>`;
+  content += `<div style="color:${usedTextColor};">`;
     content += `<div style="font-weight:bold;">`;
       content += `<span style="margin-right: 5px;"><b>${courseCode}</b></span>`;
       content += `<span>${courseName}</span>`;
     content += `</div>`;
   
-  if (document.getElementById('toggleLecturer').checked)
-    content += `<div>${lecturer}</div>`;
-  if (document.getElementById('toggleLocation').checked)
-    content += `<div>Location: ${location}</div>`;
+    if (document.getElementById('toggleLecturer').checked)
+      content += `<div style="color:${usedTextColor};">${lecturer}</div>`;
+    if (document.getElementById('toggleLocation').checked)
+      content += `<div style="color:${usedTextColor};">Location: ${location}</div>`;
     if (document.getElementById('toggleOCC').checked)
-  content += `<div style="text-align:left; background-color:${eventColor};color:white; border-radius:20px; margin-top:4px;margin-right:5px; padding:3px 8px; display:inline-block; font-weight:bold;">${occ}</div>`;
+      content += `<div style="text-align:left; background-color:${usedEventColor};color:${usedTextColor}; border-radius:20px; margin-top:4px;margin-right:5px; padding:3px 8px; display:inline-block; font-weight:bold;box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">${occ}</div>`;
+    if (document.getElementById('toggleCategory').checked)
+      content += `<div style="text-align:left; background-color:${usedEventColor};color:${usedTextColor}; border-radius:20px; margin-top:4px; padding:3px 8px; display:inline-block; font-weight:bold;box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;">${eventtype}</div>`;
+    
+    content += `</div>`;
 
-if (document.getElementById('toggleCategory').checked)
-  content += `<div style="text-align:left; background-color:${eventColor};color:white; border-radius:20px; margin-top:4px; padding:3px 8px; display:inline-block; font-weight:bold;">${eventtype}</div>`;
-
-content += `</div>`;
 
 
-  // Bottom section for time, aligned right
-  if (document.getElementById('toggleTime').checked)
-    content += `<div style="text-align: right;color:white">${info.timeText}</div>`;
-
-  content += `</div>`;
-  info.el.innerHTML = content;
+    if (document.getElementById('toggleTime').checked)
+      content += `<div style="text-align: right;color:${usedTextColor || 'white'}">${info.timeText}</div>`;
+    content += `</div>`;
+    info.el.innerHTML = content;
 }
 
        });
@@ -703,8 +890,18 @@ content += `</div>`;
   }, 500);
 
 
+
 }
-      
+  
+
+// Listen for changes on the color theme dropdown
+document.getElementById('colorThemeDropdown').addEventListener('change', function() {
+  applyTheme(this.value);
+  updateAdditionalThemeElements();
+        // Re-fetch events to update their rendering with the new theme
+        calendar.refetchEvents();
+        scaleTimeline();
+});
       scaleTimeline();
       
       // Update toggles to trigger recalculations with the loading overlay.
@@ -753,6 +950,16 @@ content += `</div>`;
       window.addEventListener('resize', scaleTimeline);
     });
 
+    function updateAdditionalThemeElements() {
+  const themeKey = document.getElementById('colorThemeDropdown').value;
+  const theme = themes[themeKey] || themes.default;
+  // Update calendar header container if needed
+  const calendarHeader = document.getElementById('calendarHeader');
+  if (calendarHeader && theme.headerBackground) {
+    calendarHeader.style.backgroundColor = theme.headerBackground;
+    calendarHeader.style.color = theme.textColor;
+  }
+}
 
 
   </script>
