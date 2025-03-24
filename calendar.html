@@ -481,7 +481,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const icsUrl = urlParams.get('icsUrl');
 
 
-function getCacheICS(url, cacheDuration = 3600) {
+function getCacheICS(url, cacheDuration = 60) {
   const cacheKey = 'cachedICS';
   const timestampKey = 'cachedICSTimestamp';
 
@@ -575,6 +575,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 if (window.ImageChannel && window.ImageChannel.postMessage) {
   window.ImageChannel.postMessage(base64Image);
 }
+getImageData(base64Image);
     // link.href = base64Image;
     // link.download = `UMscout_Timetable_${timestamp}.png`;
     // document.body.appendChild(link);
@@ -583,6 +584,10 @@ if (window.ImageChannel && window.ImageChannel.postMessage) {
 
   });
 });
+function getImageData(base64Image) {
+  return base64Image;
+  }
+
 
 
 
