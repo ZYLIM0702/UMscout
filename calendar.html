@@ -370,7 +370,7 @@ function getCacheICS(url, cacheDuration = 3600) {
 }
 
     
-document.getElementById('saveImageBtn').addEventListener('click', function() {
+document.getElementById('saveImageBtn').document.getElementById('saveButton').addEventListener('click', function() {
   const calendarEl = document.getElementById('calendar');
   const headerEl = calendarEl.querySelector('.fc-header-toolbar');
 
@@ -380,7 +380,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
   }
 
   // Capture the calendar element
-  html2canvas(calendarEl, { scale: 20, backgroundColor: null }).then(canvas => {
+  html2canvas(calendarEl, { scale: 2, backgroundColor: null }).then(canvas => {
     // Restore the header after capturing
     if (headerEl) {
       headerEl.style.visibility = '';
@@ -416,16 +416,18 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     croppedCanvas.height = height;
     croppedCtx.putImageData(ctx.getImageData(0, top, canvas.width, height), 0, 0);
 
-    // Convert cropped canvas to image and download
-    const dataURL = croppedCanvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.href = dataURL;
-    link.download = 'calendar_view.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Convert cropped canvas to Base64
+    const base64Image = croppedCanvas.toDataURL('image/png').replace('data:image/png;base64,', '');
+
+    // Send the Base64 string to Flutter
+    if (window.saveImage) {
+      window.saveImage.postMessage(base64Image);
+    } else {
+      console.error('Flutter JavaScript channel not available.');
+    }
   });
 });
+
 
 
     document.addEventListener('DOMContentLoaded', function () {
