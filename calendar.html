@@ -587,7 +587,10 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
                 }
               });
               successCallback(fcEvents);
-            })
+      setTimeout(() => {
+        scaleTimeline();
+      }, 0);
+    })
             .catch(err => {
               console.error('Error loading ICS file', err);
               failureCallback(err);
