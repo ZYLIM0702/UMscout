@@ -585,7 +585,6 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
       if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
         window.flutter_inappwebview.callHandler('ImageChannel', base64Image);
       }
-    window.location.href = "js://ImageChannel?message=" + encodeURIComponent(base64Image);
 
   });
 });
