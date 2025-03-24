@@ -578,6 +578,8 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     // Send the base64 image string to Flutter
 if (window.ImageChannel && window.ImageChannel.postMessage) {
   window.ImageChannel.postMessage(base64Image);
+  window.flutter_inappwebview.callHandler('ImageChannel', imageData);
+
 }
 window._base64Image = base64Image;
 // link.href = base64Image;
@@ -1052,6 +1054,11 @@ document.getElementById('colorThemeDropdown').addEventListener('change', functio
       });
       
       window.addEventListener('resize', scaleTimeline);
+      calendar.refetchEvents();
+        updateCalendarDimensions();
+        calendar.updateSize();
+        scaleTimeline();
+
     });
 
     function updateAdditionalThemeElements() {
