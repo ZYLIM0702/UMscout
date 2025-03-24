@@ -521,11 +521,6 @@ window._base64Image = "";
 function getImageData() {
   return window._base64Image || "";
 }
-function iOS() {
-  return ['iPad Simulator', 'iPhone Simulator', 'iPod Simulator', 'iPad', 'iPhone', 'iPod'].includes(navigator.platform)
-    // iPad on iOS 13 detection
-    || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-}
 
 document.getElementById('saveImageBtn').addEventListener('click', function() {
   const calendarEl = document.getElementById('calendar');
@@ -577,7 +572,13 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     const base64Image = croppedCanvas.toDataURL('image/png');
 
     // If the device is iOS, navigate directly to the base64 image link
-    
+const link = document.createElement('a');
+link.href = base64Image;
+link.download = `UMscout_Timetable_${Date.now()}.png`;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+
       // Otherwise, send the base64 image string to Flutter
       if (window.ImageChannel && window.ImageChannel.postMessage) {
         window.ImageChannel.postMessage(base64Image);
@@ -585,11 +586,6 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
       if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
         window.flutter_inappwebview.calalHandler('ImageChannel', base64Image);
       }
-    link.href = base64Image;
-    link.download = `UMscout_Timetable_${timestamp}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 
   });
 });
