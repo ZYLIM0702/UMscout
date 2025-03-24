@@ -532,8 +532,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
   }
 
   // Capture the calendar element
-  html2canvas(calendarEl, { scale: 20, backgroundColor: null ,useCORS: true
-  }).then(canvas => {
+  html2canvas(calendarEl, { scale: 20, backgroundColor: null, useCORS: true }).then(canvas => {
     // Restore the header after capturing
     if (headerEl) {
       headerEl.style.visibility = '';
@@ -548,8 +547,8 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     for (let y = 0; y < canvas.height; y++) {
       let rowEmpty = true;
       for (let x = 0; x < canvas.width; x++) {
-        const alpha = pixels[(y * canvas.width + x) * 4 + 3]; // Get alpha channel
-        if (alpha !== 0) { // If pixel is not transparent
+        const alpha = pixels[(y * canvas.width + x) * 4 + 3];
+        if (alpha !== 0) {
           rowEmpty = false;
           break;
         }
@@ -563,34 +562,30 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     // Crop the canvas
     const croppedCanvas = document.createElement('canvas');
     const croppedCtx = croppedCanvas.getContext('2d');
-    const height = canvas.height - top; // New height after trimming
+    const height = canvas.height - top;
 
     croppedCanvas.width = canvas.width;
     croppedCanvas.height = height;
     croppedCtx.putImageData(ctx.getImageData(0, top, canvas.width, height), 0, 0);
 
-    // Generate timestamp for filename
-    const timestamp = new Date().getTime();
-    
-    // Convert cropped canvas to a data URL and trigger download
+    // Convert cropped canvas to a data URL
     const base64Image = croppedCanvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    // Send the base64 image string to Flutter
-if (window.ImageChannel && window.ImageChannel.postMessage) {
-  window.ImageChannel.postMessage(base64Image);
-  window.flutter_inappwebview.callHandler('ImageChannel', imageData);
 
-}
-window._base64Image = base64Image;
-// link.href = base64Image;
-    // link.download = `UMscout_Timetable_${timestamp}.png`;
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
-
+    // Check if device is iOS
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+      // For iOS, navigate directly to the base64 image link
+      window.location.href = base64Image;
+    } else {
+      // For other devices, send the base64 image string to Flutter
+      if (window.ImageChannel && window.ImageChannel.postMessage) {
+        window.ImageChannel.postMessage(base64Image);
+      }
+      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+        window.flutter_inappwebview.callHandler('ImageChannel', base64Image);
+      }
+    }
   });
 });
-
 
 
 
@@ -953,6 +948,7 @@ info.el.style.overflow = 'hidden';
       
       // Render the calendar.
       calendar.render();
+
       
       
       // Function to scale the timeline to fit inside the 320x600 viewport.
@@ -998,7 +994,11 @@ info.el.style.overflow = 'hidden';
 
 
 }
-  
+        updateCalendarDimensions();
+        calendar.updateSize();
+        scaleTimeline();
+
+
 
 // Listen for changes on the color theme dropdown
 document.getElementById('colorThemeDropdown').addEventListener('change', function() {
@@ -1054,10 +1054,6 @@ document.getElementById('colorThemeDropdown').addEventListener('change', functio
       });
       
       window.addEventListener('resize', scaleTimeline);
-      calendar.refetchEvents();
-        updateCalendarDimensions();
-        calendar.updateSize();
-        scaleTimeline();
 
     });
 
