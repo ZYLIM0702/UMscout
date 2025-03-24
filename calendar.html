@@ -447,7 +447,6 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 
       // Listen for changes in the dropdown to adjust dimensions accordingly.
       document.getElementById('heightRatioDropdown').addEventListener('change', function(){
-        calendar.refetchEvents();
         updateCalendarDimensions();
         calendar.updateSize();
         scaleTimeline();
@@ -468,7 +467,6 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         headerToolbar: { left: '', center: '', right: 'prev,next' },
         datesSet: function(dateInfo) {
     scaleTimeline();
-    calendar.refetchEvents();
     updateCalendarDimensions();
     calendar.updateSize();
   },
@@ -654,7 +652,6 @@ content += `</div>`;
           if (toggle.id === 'toggleDateHeader') {
             calendar.setOption('dayHeaderFormat', getDayHeaderFormat());
           }
-          calendar.refetchEvents();
           scaleTimeline();
         });
       });
@@ -682,7 +679,6 @@ content += `</div>`;
         document.getElementById('timeRangeEndLabel').innerText = (endHour < 10 ? "0" : "") + endHour + ":00";
         calendar.setOption('slotMinTime', startHour + ":00:00");
         calendar.setOption('slotMaxTime', endHour + ":00:00");
-        calendar.refetchEvents();
         updateCalendarDimensions();
         calendar.updateSize();
         scaleTimeline();
