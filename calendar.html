@@ -570,11 +570,16 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     // Convert cropped canvas to a data URL and trigger download
     const base64Image = croppedCanvas.toDataURL('image/png');
     const link = document.createElement('a');
-    link.href = base64Image;
-    link.download = `UMscout_Timetable_${timestamp}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Send the base64 image string to Flutter
+if (window.ImageChannel && window.ImageChannel.postMessage) {
+  window.ImageChannel.postMessage(base64Image);
+}
+    // link.href = base64Image;
+    // link.download = `UMscout_Timetable_${timestamp}.png`;
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+
   });
 });
 
