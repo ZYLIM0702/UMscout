@@ -186,7 +186,7 @@ body {
     .slider-row {
     display: flex;
     gap: 20px;
-    margin: 40px 20px 0px;
+    margin: 20px 20px 0px;
     border-radius: 12px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
     justify-content: center;
@@ -237,6 +237,40 @@ body {
     .fc-timegrid-event-harness-inset .fc-timegrid-event, .fc-timegrid-event.fc-event-mirror, .fc-timegrid-more-link{
       box-shadow: none;
     }
+    .custom-dropdown {
+    position: relative;
+    display: inline-block;
+    font-size: 14px;
+    flex: 1;
+    color: #333;
+    background: #fff;
+    border-radius: 20px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .custom-dropdown .selected-option {
+    padding: 8px 12px;
+  }
+  .custom-dropdown .dropdown-options {
+    display: none;
+    position: absolute;
+    bottom: 100%; /* Positioning options above the selected option */
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-bottom: none;
+    overflow-y: auto;
+    z-index: 1000;
+    padding-left: 15px;
+    border-radius: 15px;
+  }
+  .custom-dropdown .dropdown-options li {
+    padding: 8px 12px;
+    list-style: none;
+  }
+  .custom-dropdown .dropdown-options li:hover {
+    background: #f0f0f0;
+  }
   </style>
 </head>
 <body>
@@ -303,23 +337,30 @@ body {
             </label>
           </div>
             <!-- New Color Theme Dropdown -->
-  <div style="margin: 10px;">
-    <select id="colorThemeDropdown" style="padding: 6px; border-radius: 15px; border: none;">
-      <option value="default">Default</option>
-      <option value="classic">Classic</option>
-      <option value="beigeTan">Beige Tan</option>
-      <option value="tealOrange">Teal Orange</option>
-      <option value="midnightPurple">Midnight Purple</option>
-      <option value="forestGreen">Forest Green</option>
-      <option value="blackWhite">Black White</option>
-
-    </select>
-    
-  </div>
 
         </div>
       </div>
-      
+      <div style="margin-top: 20px;display: flex;gap:15px;flex-direction: row;justify-content: space-around;padding: 0px 20px;">
+        <select id="colorThemeDropdown" style="padding: 6px; border-radius: 15px; border: none;">
+          <option value="default">Default</option>
+          <option value="classic">Classic</option>
+          <option value="beigeTan">Beige Tan</option>
+          <option value="tealOrange">Teal Orange</option>
+          <option value="midnightPurple">Midnight Purple</option>
+          <option value="forestGreen">Forest Green</option>
+          <option value="blackWhite">Black White</option>
+    
+        </select>
+          <select id="heightRatioDropdown" style="padding: 6px; border-radius: 15px; border: none;">
+            <option value="5:3">5:3</option>
+            <option value="16:9">16:9</option>
+            <option value="9:16">9:16</option>
+            <option value="3:4">3:4</option>
+            <option value="1:1">1:1</option>
+          </select>
+        
+      </div>
+    
   <!-- Slider and dropdown row -->
   <div class="slider-row">
     <div style="flex:1">
@@ -329,16 +370,7 @@ body {
         <span id="timeRangeEndLabel">19:00</span>
       </div>
     </div>
-    <div>
-      <select id="heightRatioDropdown" style="padding: 2px; border-radius: 15px; border: none;">
-        <option value="5:3">5:3</option>
-        <option value="16:9">16:9</option>
-        <option value="9:16">9:16</option>
-        <option value="3:4">3:4</option>
-        <option value="1:1">1:1</option>
 
-      </select>
-    </div>
   </div>
   <div style="text-align:center; margin: 15px 15px 30px;">
     <button id="saveImageBtn" style="padding: 10px 20px; font-size: 1rem;width: 100%;border-radius: 20px;border: none;background-color: #573aff;color: white;">Save as PNG</button>
@@ -550,6 +582,62 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
       // Fixed calendar height
       const fixedHeight = 1900;
       let fixedWidth = fixedHeight; // default, updated based on ratio
+
+      function initCustomDropdown(dropdownId) {
+      var selectEl = document.getElementById(dropdownId);
+      if (!selectEl) return;
+      
+      // Create a container for the custom dropdown
+      var container = document.createElement('div');
+      container.className = 'custom-dropdown';
+      
+      // Create element to display the selected option
+      var selected = document.createElement('div');
+      selected.className = 'selected-option';
+      selected.textContent = selectEl.options[selectEl.selectedIndex].text;
+      container.appendChild(selected);
+      
+      // Create the dropdown list container
+      var optionsList = document.createElement('ul');
+      optionsList.className = 'dropdown-options';
+      
+      // Populate the custom dropdown list with options from the native select
+      for (var i = 0; i < selectEl.options.length; i++) {
+        var li = document.createElement('li');
+        li.textContent = selectEl.options[i].text;
+        li.dataset.value = selectEl.options[i].value;
+        li.addEventListener('click', function(e) {
+          var value = this.dataset.value;
+          selected.textContent = this.textContent;
+          selectEl.value = value;
+          optionsList.style.display = 'none';
+          // Optionally, trigger a change event if needed
+          selectEl.dispatchEvent(new Event('change'));
+        });
+        optionsList.appendChild(li);
+      }
+      container.appendChild(optionsList);
+
+      // Toggle the options list when clicking on the selected element
+      selected.addEventListener('click', function(e) {
+        e.stopPropagation();
+        optionsList.style.display = optionsList.style.display === 'block' ? 'none' : 'block';
+      });
+      
+      // Close dropdown if clicking outside
+      document.addEventListener('click', function(e) {
+        optionsList.style.display = 'none';
+      });
+      
+      // Insert the custom dropdown before the native select element
+      selectEl.parentNode.insertBefore(container, selectEl);
+      // Hide the native select element
+      selectEl.style.display = 'none';
+    }
+    
+    // Initialize custom dropdowns for the desired elements
+    initCustomDropdown('colorThemeDropdown');
+    initCustomDropdown('heightRatioDropdown');
       
       // Compute fixed width based on the ratio dropdown
       function updateCalendarDimensions() {
