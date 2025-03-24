@@ -583,10 +583,13 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         window.ImageChannel.postMessage(base64Image);
       }
       if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-        window.flutter_inappwebview.callHandler('ImageChannel', base64Image);
+        window.flutter_inappwebview.calalHandler('ImageChannel', base64Image);
       }
-          console.log("UMscoutBase64:" + base64Image);
-
+    link.href = base64Image;
+    link.download = `UMscout_Timetable_${timestamp}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
   });
 });
