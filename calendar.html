@@ -566,14 +566,31 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 
     // Convert cropped canvas to Base64
     const base64Image = croppedCanvas.toDataURL('image/png').replace('data:image/png;base64,', '');
-
     window.saveImage.postMessage(base64Image);
+
   });
 });
 
 
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Define a global function that Flutter can call or that Flutter has set up via JS interop.
+  window.onSaveImage = function(base64Image) {
+    // You can do any JavaScript-side processing here
+    console.log("Received image from JS:", base64Image);
+    // If you have Dart interop set up, this could trigger a Dart callback.
+  };
+  // Optionally, set up a saveImage object that calls the global function.
+  window.saveImage = {
+    postMessage: function(base64Image) {
+      if (typeof window.onSaveImage === 'function') {
+        window.onSaveImage(base64Image);
+      } else {
+        console.error("onSaveImage callback is not defined.");
+      }
+    }
+  };
+
       // Fixed calendar height
       const fixedHeight = 1900;
       let fixedWidth = fixedHeight; // default, updated based on ratio
