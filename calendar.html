@@ -15,9 +15,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
   <!-- Font Awesome for icons (example) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  
   <style>
-    :root {
+        :root {
     --fc-today-bg-color: transparent;
     }
 body {
@@ -234,102 +234,142 @@ body {
       margin: 15px;
     }
     .fc-direction-ltr .fc-timegrid-col-events { margin: 1px 2px 0px 2px; }
-
   </style>
 </head>
 <body>
-<!-- Container for header outside the timeline viewport -->
-<div id="calendarHeader" style="max-width:900px; margin:20px auto; text-align:center; color:#fff;"></div>
-<!-- Timeline viewport for the timeline part only -->
-<div id="timelineViewport">
-  <!-- Loading overlay with spinner -->
-  <div id="loadingOverlay">
-    <div class="spinner"></div>
+  <!-- Container for header outside the timeline viewport -->
+  <div id="calendarHeader" style="max-width:900px; margin:20px auto; text-align:center; color:#fff;"></div>
+  <!-- Timeline viewport for the timeline part only -->
+  <div id="timelineViewport">
+    <!-- Loading overlay with spinner -->
+    <div id="loadingOverlay">
+      <div class="spinner"></div>
+    </div>
+    <div id="calendar" ></div>
   </div>
-  <div id="calendar" ></div>
-</div>
-<!-- Horizontally scrollable toggles -->
-<div class="settings-panel">
-  <div class="toggle-scroll">
-    <div class="toggle-item">
-      <div><i class="fa-solid fa-calendar-days"></i></div>
-      <label class="cupertino-switch">
-        <input type="checkbox" id="toggleOCC" checked>
-        <span class="slider"></span>
-      </label>
+    <!-- Horizontally scrollable toggles -->
+    <div class="settings-panel">
+        <div class="toggle-scroll">
+          <div class="toggle-item">
+            <div><i class="fa-solid fa-calendar-days"></i></div>
+            <label class="cupertino-switch">
+              <input type="checkbox" id="toggleOCC" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div><i class="fa-solid fa-list"></i></div>
+            <label class="cupertino-switch">
+              <input type="checkbox" id="toggleCategory" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div><i class="fa-solid fa-user"></i></div>
+            <label class="cupertino-switch">
+              <input type="checkbox" id="toggleLecturer">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div><i class="fa-solid fa-clock"></i></div>
+            <label class="cupertino-switch">
+              <input type="checkbox" id="toggleTime" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div><i class="fa-solid fa-location-dot"></i></div>
+            <label class="cupertino-switch">
+              <input type="checkbox" id="toggleLocation" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div><i class="fa-solid fa-calendar-check"></i></div>
+            <label class="cupertino-switch">
+              <input type="checkbox" id="toggleWeekend">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="toggle-item">
+            <div><i class="fa-solid fa-calendar-alt"></i></div>
+            <label class="cupertino-switch">
+              <input type="checkbox" id="toggleDateHeader">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+  <!-- Slider and dropdown row -->
+  <div class="slider-row">
+    <div style="flex:1">
+      <div id="timeRangeSlider"></div>
+      <div class="slider-labels">
+        <span id="timeRangeStartLabel">08:00</span>
+        <span id="timeRangeEndLabel">19:00</span>
+      </div>
     </div>
-    <div class="toggle-item">
-      <div><i class="fa-solid fa-list"></i></div>
-      <label class="cupertino-switch">
-        <input type="checkbox" id="toggleCategory" checked>
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="toggle-item">
-      <div><i class="fa-solid fa-user"></i></div>
-      <label class="cupertino-switch">
-        <input type="checkbox" id="toggleLecturer">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="toggle-item">
-      <div><i class="fa-solid fa-clock"></i></div>
-      <label class="cupertino-switch">
-        <input type="checkbox" id="toggleTime" checked>
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="toggle-item">
-      <div><i class="fa-solid fa-location-dot"></i></div>
-      <label class="cupertino-switch">
-        <input type="checkbox" id="toggleLocation" checked>
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="toggle-item">
-      <div><i class="fa-solid fa-calendar-check"></i></div>
-      <label class="cupertino-switch">
-        <input type="checkbox" id="toggleWeekend">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="toggle-item">
-      <div><i class="fa-solid fa-calendar-alt"></i></div>
-      <label class="cupertino-switch">
-        <input type="checkbox" id="toggleDateHeader">
-        <span class="slider"></span>
-      </label>
+    <div>
+      <select id="heightRatioDropdown" style="padding: 2px; border-radius: 15px; border: none;">
+        <option value="5:3">5:3</option>
+        <option value="16:9">16:9</option>
+        <option value="9:16">9:16</option>
+        <option value="3:4">3:4</option>
+        <option value="1:1">1:1</option>
+
+      </select>
     </div>
   </div>
-</div>
-
-<!-- Slider and dropdown row -->
-<div class="slider-row">
-  <div style="flex:1">
-    <div id="timeRangeSlider"></div>
-    <div class="slider-labels">
-      <span id="timeRangeStartLabel">08:00</span>
-      <span id="timeRangeEndLabel">19:00</span>
-    </div>
+  <div style="text-align:center; margin: 15px 15px 30px;">
+    <button id="saveImageBtn" style="padding: 10px 20px; font-size: 1rem;width: 100%;border-radius: 20px;border: none;background-color: #573aff;color: white;">Save as PNG</button>
   </div>
-  <div>
-    <select id="heightRatioDropdown" style="padding: 2px; border-radius: 15px; border: none;">
-      <option value="5:3">5:3</option>
-      <option value="16:9">16:9</option>
-      <option value="9:16">9:16</option>
-      <option value="3:4">3:4</option>
-      <option value="1:1">1:1</option>
+  
 
-    </select>
-  </div>
-</div>
-<div style="text-align:center; margin: 15px 15px 30px;">
-  <button id="saveImageBtn" style="padding: 10px 20px; font-size: 1rem;width: 100%;border-radius: 20px;border: none;background-color: #573aff;color: white;">Save as PNG</button>
-</div>
+  <script>
+
+const urlParams = new URLSearchParams(window.location.search);
+const icsUrl = urlParams.get('icsUrl');
 
 
-<script>
+function getCacheICS(url, cacheDuration = 3600) {
+  const cacheKey = 'cachedICS';
+  const timestampKey = 'cachedICSTimestamp';
 
+  // Check for cached data
+  const cachedData = localStorage.getItem(cacheKey);
+  const cachedTimestamp = localStorage.getItem(timestampKey);
+
+  if (cachedData && cachedTimestamp) {
+    const ageInSeconds = (Date.now() - parseInt(cachedTimestamp, 10)) / 1000;
+    if (ageInSeconds < cacheDuration) {
+      console.log('Returning cached ICS data');
+      return Promise.resolve(cachedData);
+    }
+  }
+
+  // If no valid cache exists, fetch new data
+  return fetch(url)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.text();
+    })
+    .then(data => {
+      localStorage.setItem(cacheKey, data);
+      localStorage.setItem(timestampKey, Date.now().toString());
+      console.log('Fetched new ICS data and updated cache');
+      return data;
+    })
+    .catch(error => {
+      console.error('Error fetching ICS data:', error);
+      throw error;
+    });
+}
+
+    
 document.getElementById('saveImageBtn').addEventListener('click', function() {
   const calendarEl = document.getElementById('calendar');
   const headerEl = calendarEl.querySelector('.fc-header-toolbar');
@@ -392,7 +432,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
       // Fixed calendar height
       const fixedHeight = 1900;
       let fixedWidth = fixedHeight; // default, updated based on ratio
-
+      
       // Compute fixed width based on the ratio dropdown
       function updateCalendarDimensions() {
   const fixedHeight = 1900;
@@ -442,23 +482,24 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
   }
 }
 
-
+  
       updateCalendarDimensions();
-
+      
       // Listen for changes in the dropdown to adjust dimensions accordingly.
       document.getElementById('heightRatioDropdown').addEventListener('change', function(){
+        calendar.refetchEvents();
         updateCalendarDimensions();
         calendar.updateSize();
         scaleTimeline();
       });
-
+      
       // Function to determine the day header format based on toggle state.
       function getDayHeaderFormat() {
         return document.getElementById('toggleDateHeader').checked
           ? { weekday: 'short', month: 'numeric', day: 'numeric' }
           : { weekday: 'short' };
       }
-
+      
       // Create the calendar instance.
       var calendarEl = document.getElementById('calendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -467,6 +508,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         headerToolbar: { left: '', center: '', right: 'prev,next' },
         datesSet: function(dateInfo) {
     scaleTimeline();
+    calendar.refetchEvents();
     updateCalendarDimensions();
     calendar.updateSize();
   },
@@ -477,21 +519,22 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         expandRows: true,
         weekends: document.getElementById('toggleWeekend').checked,
         events: function(fetchInfo, successCallback, failureCallback) {
-if (window.icsData && window.icsData.length > 0) {
-              const jcalData = ICAL.parse(window.icsData);
+          getCacheICS(icsUrl)
+    .then(data => {
+              const jcalData = ICAL.parse(data);
               const comp = new ICAL.Component(jcalData);
               const vevents = comp.getAllSubcomponents('vevent');
               const fcEvents = [];
               const rangeStart = fetchInfo.start;
               const rangeEnd = fetchInfo.end;
-
+              
               vevents.forEach(event => {
                 const vevent = new ICAL.Event(event);
                 const eventStart = vevent.startDate.toJSDate();
                 const eventEnd = vevent.endDate.toJSDate();
                 const duration = eventEnd - eventStart;
 
-
+                
                 if (vevent.component.hasProperty('rrule')) {
                   const iterator = vevent.iterator();
                   let next;
@@ -509,7 +552,7 @@ if (window.icsData && window.icsData.length > 0) {
                       ? `#${vevent.component.getFirstPropertyValue("color").slice(2)}`
                       : "#2196F3";
                     let eventtype = vevent.component.getFirstPropertyValue("categories") || "";
-
+                    
                     fcEvents.push({
                       title: courseCode,
                       start: occDate,
@@ -531,7 +574,7 @@ if (window.icsData && window.icsData.length > 0) {
                       : "#2196F3";
                     let eventtype = vevent.component.getFirstPropertyValue("categories") || "";
 
-
+                    
                     fcEvents.push({
                       title: courseCode,
                       start: eventStart,
@@ -544,7 +587,12 @@ if (window.icsData && window.icsData.length > 0) {
                 }
               });
               successCallback(fcEvents);
-            }},
+            })
+            .catch(err => {
+              console.error('Error loading ICS file', err);
+              failureCallback(err);
+            });
+        },
         eventDidMount: function (info) {
             info.el.style.borderRadius = '14px';
 info.el.style.padding = '8px';
@@ -554,14 +602,14 @@ info.el.style.overflow = 'hidden';
   const { courseCode, courseName, occ, lecturer, location, eventtype } = info.event.extendedProps;
   // Build the content as a flex container with two parts: top and bottom.
   let content = `<div style="display: flex; flex-direction: column; height: 100%; justify-content: space-between;">`;
-
+  
   // Top section for course info and OCC (left aligned)
   content += `<div>`;
     content += `<div style="font-weight:bold;">`;
       content += `<span style="margin-right: 5px;"><b>${courseCode}</b></span>`;
       content += `<span>${courseName}</span>`;
     content += `</div>`;
-
+  
   if (document.getElementById('toggleLecturer').checked)
     content += `<div>${lecturer}</div>`;
   if (document.getElementById('toggleLocation').checked)
@@ -584,20 +632,11 @@ content += `</div>`;
 }
 
        });
-
+      
       // Render the calendar.
       calendar.render();
-  calendar.on('datesSet', () => {
-    // Wait for the next animation frame so the DOM fully settles
-    requestAnimationFrame(() => {
-      scaleTimeline();
-    updateCalendarDimensions();
-    calendar.updateSize();
-
-    });
-  });
-
-
+      
+      
       // Function to scale the timeline to fit inside the 320x600 viewport.
       function scaleTimeline() {
         calendar.setOption('dayHeaderFormat', getDayHeaderFormat());
@@ -640,9 +679,9 @@ content += `</div>`;
 
 
 }
-
+      
       scaleTimeline();
-
+      
       // Update toggles to trigger recalculations with the loading overlay.
       document.querySelectorAll('.cupertino-switch input').forEach(toggle => {
         toggle.addEventListener('change', () => {
@@ -652,10 +691,11 @@ content += `</div>`;
           if (toggle.id === 'toggleDateHeader') {
             calendar.setOption('dayHeaderFormat', getDayHeaderFormat());
           }
+          calendar.refetchEvents();
           scaleTimeline();
         });
       });
-
+      
       var timeSlider = document.getElementById('timeRangeSlider');
       noUiSlider.create(timeSlider, {
         start: [8, 19],
@@ -671,7 +711,7 @@ content += `</div>`;
           from: function(value) { return Number(value); }
         }
       });
-
+      
       timeSlider.noUiSlider.on('change', function (values) {
         let startHour = values[0];
         let endHour = values[1];
@@ -679,11 +719,12 @@ content += `</div>`;
         document.getElementById('timeRangeEndLabel').innerText = (endHour < 10 ? "0" : "") + endHour + ":00";
         calendar.setOption('slotMinTime', startHour + ":00:00");
         calendar.setOption('slotMaxTime', endHour + ":00:00");
+        calendar.refetchEvents();
         updateCalendarDimensions();
         calendar.updateSize();
         scaleTimeline();
       });
-
+      
       window.addEventListener('resize', scaleTimeline);
     });
 
