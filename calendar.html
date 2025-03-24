@@ -528,7 +528,8 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
   }
 
   // Capture the calendar element
-  html2canvas(calendarEl, { scale: 20, backgroundColor: null }).then(canvas => {
+  html2canvas(calendarEl, { scale: 20, backgroundColor: null ,useCORS: true
+  }).then(canvas => {
     // Restore the header after capturing
     if (headerEl) {
       headerEl.style.visibility = '';
