@@ -46,14 +46,14 @@ body {
 /* Tablet (iPad) - Adjusts based on orientation */
 @media (min-width: 769px) {
   #timelineViewport {
-    width: 900px;
+    width: 800px;
     height: 600px;
   }
 
   @media (orientation: portrait) {
     #timelineViewport {
-      width: 800px;
-      height: 900px;
+      width: 700px;
+      height: 800px;
     }
   }
 }
@@ -952,8 +952,8 @@ info.el.style.overflow = 'hidden';
       viewportWidth = 360;
       viewportHeight = 460;
     } else {
-      viewportWidth = isPortrait ? 800 : 900;
-      viewportHeight = isPortrait ? 900 : 600;
+      viewportWidth = isPortrait ? 700 : 800;
+      viewportHeight = isPortrait ? 800 : 600;
     }
 
     const calWidth = calendarEl.offsetWidth;
