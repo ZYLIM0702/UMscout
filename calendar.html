@@ -517,7 +517,10 @@ function getCacheICS(url, cacheDuration = 60) {
     });
 }
 
-    
+function getImageData(base64Image) {
+  return base64Image;
+  }
+
 document.getElementById('saveImageBtn').addEventListener('click', function() {
   const calendarEl = document.getElementById('calendar');
   const headerEl = calendarEl.querySelector('.fc-header-toolbar');
@@ -584,9 +587,6 @@ getImageData(base64Image);
 
   });
 });
-function getImageData(base64Image) {
-  return base64Image;
-  }
 
 
 
