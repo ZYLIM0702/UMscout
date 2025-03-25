@@ -621,15 +621,21 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
           window.flutter_inappwebview.callHandler('ImageChannel', "Capture");
         }
-        
-        const imageData = croppedCanvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = imageData;
-        link.href = "https://images.unsplash.com/photo-1575936123452-b67c3203c357?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
-        link.download = `UMscout_Timetable_${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const imageUrl = "https://images.unsplash.com/photo-1575936123452-b67c3203c357?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
+
+        fetch(imageUrl)
+  .then(response => response.blob())
+  .then(blob => {
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `UMscout_Timetable_${Date.now()}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl); // Clean up
+  })
+  .catch(error => console.error("Error downloading the image:", error));
       });
 });
 
