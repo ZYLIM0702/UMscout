@@ -624,7 +624,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         // Create a download link
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'calendar.png';
+        link.download = `UMscout_Timetable_${Date.now()}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
