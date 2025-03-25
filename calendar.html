@@ -622,12 +622,28 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         }
         
         const imageData = croppedCanvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = imageData;
-        link.download = `UMscout_Timetable_${Date.now()}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+
+// Create an image element to preview the image
+const imgPreview = document.createElement('img');
+imgPreview.src = imageData;
+imgPreview.alt = 'Timetable Preview';
+imgPreview.style.maxWidth = '100%'; // Ensure it fits within the container
+
+// Replace existing content or append it to a specific container
+const container = document.getElementById('preview-container') || document.body;
+container.innerHTML = ''; // Remove existing content if needed
+container.appendChild(imgPreview);
+
+// Create a download link
+const link = document.createElement('a');
+link.href = imageData;
+link.download = `UMscout_Timetable_${Date.now()}.png`;
+link.textContent = 'Download Timetable';
+link.style.display = 'block';
+link.style.marginTop = '10px';
+
+container.appendChild(link);
+
       });
 });
 
