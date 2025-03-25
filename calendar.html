@@ -613,7 +613,6 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
       0, 0, // Destination position
       contentWidth, contentHeight // Destination size
     );
-    const base64Image = croppedCanvas.toDataURL('image/png');
 
             // Notify Flutter
             if (window.ImageChannel && window.ImageChannel.postMessage) {
@@ -622,27 +621,20 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
           window.flutter_inappwebview.callHandler('ImageChannel', "Capture");
         }
-// Convert Base64 to Blob
-function base64ToBlob(base64, mimeType) {
-  const byteCharacters = atob(base64.split(',')[1]); // Remove data URL prefix
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
+
+        croppedCanvas.toBlob(blob => {
+  if (blob) {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = function () {
+      const base64Image = reader.result; // This is the Base64 string
+
+      // Preview the image in a new tab
+      const newTab = window.open();
+      newTab.document.write(`<img src="${base64Image}" style="width: 100%; height: auto;" />`);
+    };
   }
-  const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], { type: mimeType });
-}
-
-const blob = base64ToBlob(base64Image, "image/png");
-const blobUrl = URL.createObjectURL(blob);
-
-const link = document.createElement('a');
-link.href = blobUrl;
-link.download = `UMscout_Timetable_${Date.now()}.png`;
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
-URL.revokeObjectURL(blobUrl); // Clean up
+}, 'image/png');
 
       });
 });
