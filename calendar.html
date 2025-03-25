@@ -602,7 +602,8 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 } else {
   eventColor = makeColorPaler(theme.eventBackground, 0.4);
 }const backgroundColor = selectedPadding === 0 ? null : eventColor;
-calendarEl.style.borderRadius = '50px';
+
+document.querySelector('.fc-view-harness').style.borderRadius = selectedPadding === 0 ? '0': '40px';
 
   // Capture the calendar element with transparency
   html2canvas(calendarEl, {
@@ -657,7 +658,8 @@ calendarEl.style.borderRadius = '50px';
       window.ImageChannel.postMessage(base64Image);
     }
   });
-  calendarEl.style.borderRadius = '20px';
+
+  document.querySelector('.fc-view-harness').style.borderRadius = '20px';
 
 });
 
