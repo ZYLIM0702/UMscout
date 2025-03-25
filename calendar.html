@@ -262,15 +262,23 @@ body {
     }
     .custom-dropdown {
     position: relative;
-    display: inline-block;
+    display: flex;
     font-size: 14px;
-    flex: 1;
     color: #333;
     background: #fff;
     border-radius: 20px;
     cursor: pointer;
     user-select: none;
   }
+  .custom-dropdown {
+  flex: 1; /* Default flex */
+}
+
+.custom-dropdown:first-child, 
+.custom-dropdown:nth-child(5) {
+  flex: 2; /* Make first and last dropdowns wider */
+}
+
   .custom-dropdown .selected-option {
     padding: 8px 12px;
   }
@@ -368,7 +376,7 @@ body {
         </div>
       </div>
       <div style="margin-top: 20px;display: flex;gap:15px;flex-direction: row;justify-content: space-around;padding: 0px 20px;">
-        <select id="colorThemeDropdown" style="padding: 6px; border-radius: 15px; border: none;">
+        <select id="colorThemeDropdown" style="padding: 6px; border-radius: 15px; border: none; display: flex;flex: 2;">
           <option value="default">Default</option>
           <option value="classic">Classic</option>
           <option value="beigeTan">Beige Tan</option>
@@ -378,7 +386,7 @@ body {
           <option value="blackWhite">Black White</option>
     
         </select>
-          <select id="heightRatioDropdown" style="padding: 6px; border-radius: 15px; border: none;">
+          <select id="heightRatioDropdown" style="padding: 6px; border-radius: 15px; border: none;display: flex;flex: 1;">
             <option value="5:3">5:3</option>
             <option value="16:9">16:9</option>
             <option value="9:16">9:16</option>
@@ -386,7 +394,7 @@ body {
             <option value="1:1">1:1</option>
           </select>
       
-          <select id="paddingDropdown" style="padding: 6px; border-radius: 15px; border: none;">
+          <select id="paddingDropdown" style="padding: 6px; border-radius: 15px; border: none;display: flex;flex: 2;">
             <option value="none">Padding - None</option>
             <option value="small">Small</option>
             <option value="medium">Medium</option>
