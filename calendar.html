@@ -598,8 +598,11 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 
   const themeKey = document.getElementById('colorThemeDropdown').value;
           const theme = themes[themeKey] || themes.default;
-          const eventColor = makeColorPaler(theme.eventBackground,0.4);
-const backgroundColor = selectedPadding === 0 ? null : eventColor;
+          if (themeKey === "default") {
+  eventColor = "#ffffff"; // White
+} else {
+  eventColor = makeColorPaler(theme.eventBackground, 0.4);
+}const backgroundColor = selectedPadding === 0 ? null : eventColor;
 
   // Capture the calendar element with transparency
   html2canvas(calendarEl, {
@@ -1066,7 +1069,6 @@ info.el.style.overflow = 'hidden';
     // Deconstruct extended props from the event (from ICS parsing)
     const { courseCode, courseName, occ, lecturer, location, eventtype, eventColor } = info.event.extendedProps;
         // Build event content – override event colors if a theme is active (e.g. classic)
-        paddingbackgroundcolor = makeColorPaler(theme.eventBackground, 0.4);
         console.log(theme.eventBackground);
         let usedEventColor = 
     (theme.eventBackground === "#ffffff" || eventColor === "white") ? "#EDECEC" : 
