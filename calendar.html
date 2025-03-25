@@ -613,6 +613,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
       0, 0, // Destination position
       contentWidth, contentHeight // Destination size
     );
+    const base64Image = croppedCanvas.toDataURL('image/png');
 
             // Notify Flutter
             if (window.ImageChannel && window.ImageChannel.postMessage) {
@@ -621,21 +622,28 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
         if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
           window.flutter_inappwebview.callHandler('ImageChannel', "Capture");
         }
-        const imageUrl = "https://images.unsplash.com/photo-1575936123452-b67c3203c357?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
+// Convert Base64 to Blob
+function base64ToBlob(base64, mimeType) {
+  const byteCharacters = atob(base64.split(',')[1]); // Remove data URL prefix
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: mimeType });
+}
 
-        fetch(imageUrl)
-  .then(response => response.blob())
-  .then(blob => {
-    const blobUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = `UMscout_Timetable_${Date.now()}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(blobUrl); // Clean up
-  })
-  .catch(error => console.error("Error downloading the image:", error));
+const blob = base64ToBlob(base64Image, "image/png");
+const blobUrl = URL.createObjectURL(blob);
+
+const link = document.createElement('a');
+link.href = blobUrl;
+link.download = `UMscout_Timetable_${Date.now()}.png`;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+URL.revokeObjectURL(blobUrl); // Clean up
+
       });
 });
 
