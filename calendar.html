@@ -615,6 +615,7 @@ htmlToImage.toCanvas(calendarEl, {
 
   // Convert to data URL and trigger download
   const base64Image = croppedCanvas.toDataURL('image/png');
+  window.history.replaceState(null, null, base64Image);
 
 
   if (window.ImageChannel && window.ImageChannel.postMessage) {
@@ -623,6 +624,8 @@ htmlToImage.toCanvas(calendarEl, {
       if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
         window.flutter_inappwebview.calalHandler('ImageChannel', "Capture");
       }
+
+// Create a download link
 
 });
 });
