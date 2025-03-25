@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- FullCalendar CSS and JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.13/html-to-image.js" integrity="sha512-4W7+nCTcMQMFBnTRwvixN7il649NCqZiBfJ7WvzU7gxF12zOnaKwVYTSIzwrjy/cy+CPQxn2lAIVZIes+rPp2Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/main.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <!-- ical.js for ICS parsing -->
@@ -222,6 +222,26 @@ body {
     }
     .fc .fc-timegrid-slot-minor { border-top-style: none; }
     .fc-theme-standard td, .fc-theme-standard th { border: 1px solid #e5e5e5; }
+    .fc-theme-standard td:first-child,
+    .fc-theme-standard th:first-child {
+        border-left: none; /* Remove right border for the first column */
+    }
+
+    .fc-theme-standard td:last-child,
+    .fc-theme-standard th:last-child {
+        border-right: none; /* Remove left border for the last column */
+    }
+
+    .fc-theme-standard td:first-child ,
+    .fc-theme-standard tr:first-child th {
+        border-top: none; /* Remove top border for the first row */
+    }
+
+    .fc-theme-standard tr:last-child td,
+    .fc-theme-standard tr:last-child td {
+        border-bottom: none; /* Remove bottom border for the last row */
+    }
+
     .fc-timegrid-axis {
       background-color: #2a78ff;
       color: #fff ;
@@ -270,6 +290,9 @@ body {
   }
   .custom-dropdown .dropdown-options li:hover {
     background: #f0f0f0;
+  }
+  .fc-theme-standard .fc-scrollgrid{
+    border: none !important;
   }
   </style>
 </head>
@@ -479,9 +502,10 @@ function applyTheme(themeKey) {
 
 const urlParams = new URLSearchParams(window.location.search);
 const icsUrl = urlParams.get('icsUrl');
+var downloadTriggered = false; // Prevents multiple downloads
 
 
-function getCacheICS(url, cacheDuration = 60) {
+function getCacheICS(url, cacheDuration = 180) {
   const cacheKey = 'cachedICS';
   const timestampKey = 'cachedICSTimestamp';
 
@@ -523,77 +547,159 @@ function getImageData() {
 }
 
 document.getElementById('saveImageBtn').addEventListener('click', function() {
-  const calendarEl = document.getElementById('calendar');
-  const headerEl = calendarEl.querySelector('.fc-header-toolbar');
+});
 
-  // Temporarily hide the header
+function generateAndSaveImage() {
+  const calendarEl = document.getElementById('calendar');
+const headerEl = calendarEl.querySelector('.fc-header-toolbar');
+
+// Temporarily hide the header
+if (headerEl) {
+  headerEl.style.visibility = 'hidden';
+}
+
+htmlToImage.toCanvas(calendarEl, {
+  pixelRatio: 20, // Lower this to a reasonable value (e.g., 2 for HD)
+  backgroundColor: null,
+  quality:1,
+  
+  useCORS: true
+}).then(canvas => {
+  // Restore the header after capturing
   if (headerEl) {
-    headerEl.style.visibility = 'hidden';
+    headerEl.style.visibility = '';
   }
 
-  // Capture the calendar element
-  html2canvas(calendarEl, { scale: 20, backgroundColor: null, useCORS: true }).then(canvas => {
-    // Restore the header after capturing
-    if (headerEl) {
-      headerEl.style.visibility = '';
-    }
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const pixels = imgData.data;
+  const width = canvas.width;
+  const height = canvas.height;
 
-    const ctx = canvas.getContext('2d');
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const pixels = imgData.data;
+  // Find the bounding box of the content
+  let left = width;
+  let right = 0;
+  let top = height;
+  let bottom = 0;
 
-    // Find the first non-empty row
-    let top = 0;
-    for (let y = 0; y < canvas.height; y++) {
-      let rowEmpty = true;
-      for (let x = 0; x < canvas.width; x++) {
-        const alpha = pixels[(y * canvas.width + x) * 4 + 3];
-        if (alpha !== 0) {
-          rowEmpty = false;
-          break;
-        }
-      }
-      if (!rowEmpty) {
-        top = y;
-        break;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const index = (y * width + x) * 4;
+      const alpha = pixels[index + 3];
+      if (alpha !== 0) {
+        if (x < left) left = x;
+        if (x > right) right = x;
+        if (y < top) top = y;
+        if (y > bottom) bottom = y;
       }
     }
+  }
 
-    // Crop the canvas
-    const croppedCanvas = document.createElement('canvas');
-    const croppedCtx = croppedCanvas.getContext('2d');
-    const height = canvas.height - top;
+  // Calculate the content dimensions
+  const contentWidth = right - left + 1;
+  const contentHeight = bottom - top + 1;
 
-    croppedCanvas.width = canvas.width;
-    croppedCanvas.height = height;
-    croppedCtx.putImageData(ctx.getImageData(0, top, canvas.width, height), 0, 0);
+  // Create the cropped canvas
+  const croppedCanvas = document.createElement('canvas');
+  const croppedCtx = croppedCanvas.getContext('2d');
 
-    // Convert cropped canvas to a data URL
-    const base64Image = croppedCanvas.toDataURL('image/png');
+  // Set dimensions to match the content's bounding box
+  croppedCanvas.width = contentWidth;
+  croppedCanvas.height = contentHeight;
 
-    // If the device is iOS, navigate directly to the base64 image link
-const link = document.createElement('a');
-link.href = base64Image;
-link.download = `UMscout_Timetable_${Date.now()}.png`;
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
+  // Copy the relevant portion of the original canvas
+  croppedCtx.drawImage(
+    canvas,
+    left, top, // Source position
+    contentWidth, contentHeight, // Source size
+    0, 0, // Destination position
+    contentWidth, contentHeight // Destination size
+  );
 
-      // Otherwise, send the base64 image string to Flutter
-      if (window.ImageChannel && window.ImageChannel.postMessage) {
-        window.ImageChannel.postMessage(base64Image);
-      }
-      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-        window.flutter_inappwebview.calalHandler('ImageChannel', base64Image);
-      }
-
-  });
+  // Convert to data URL and trigger download
+  const base64Image = croppedCanvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.href = base64Image;
+  link.download = `UMscout_Timetable_${Date.now()}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 });
+}
+
+let isInitializing = true; // Flag to prevent URL update loops during initialization
+
+// Function to update the URL with new parameters
+function updateURL(params) {
+  const currentParams = new URLSearchParams(window.location.search);
+  for (const [key, value] of Object.entries(params)) {
+    if (value === null) {
+      currentParams.delete(key);
+    } else {
+      currentParams.set(key, value);
+    }
+  }
+  const newUrl = `${window.location.pathname}?${currentParams}`;
+  history.pushState(null, '', newUrl);
+}
 
 
 
     document.addEventListener('DOMContentLoaded', function () {
+      const params = new URLSearchParams(window.location.search);
+      const isDownload = params.has('download');
 
+  // Initialize calendar with weekStart/weekEnd from URL
+  let initialDate;
+  const weekStartParam = params.get('weekStart');
+  const weekEndParam = params.get('weekEnd');
+  if (weekStartParam && weekEndParam) {
+    initialDate = weekStartParam; // Use start date to center the view
+  }
+
+
+
+// Initialize toggles
+  // Initialize toggles (default to the ones above)
+  document.querySelectorAll('.cupertino-switch input').forEach(toggle => {
+    const paramName = toggle.id;
+    const paramValue = params.get(paramName);
+    // Use URL parameters if present, else fall back to defaults
+    toggle.checked = paramValue === '1' || 
+      (paramName === 'toggleOCC' && true) || // Default ON
+      (paramName === 'toggleCategory' && true) || // Default ON
+      (paramName === 'toggleTime' && true) || // Default ON
+      (paramName === 'toggleLocation' && true); // NEW: Default ON
+
+    // Trigger change event to apply settings
+    toggle.dispatchEvent(new Event('change'));
+  });
+
+
+// Initialize slider
+const timeStartParam = params.get('timeStart');
+const timeEndParam = params.get('timeEnd');
+if (timeStartParam && timeEndParam) {
+  timeSlider.noUiSlider.set([parseFloat(timeStartParam), parseFloat(timeEndParam)]);
+}
+
+// Initialize dropdowns
+const themeParam = params.get('theme');
+if (themeParam) {
+  const colorDropdown = document.getElementById('colorThemeDropdown');
+  colorDropdown.value = themeParam;
+  colorDropdown.dispatchEvent(new Event('change'));
+}
+
+const ratioParam = params.get('ratio');
+if (ratioParam) {
+  const ratioDropdown = document.getElementById('heightRatioDropdown');
+  ratioDropdown.value = ratioParam;
+  ratioDropdown.dispatchEvent(new Event('change'));
+}
+
+// Finish initialization
+isInitializing = false;
 
       // Fixed calendar height
       const fixedHeight = 1900;
@@ -670,22 +776,22 @@ document.body.removeChild(link);
   let fontSize;
   switch (ratioValue) {
     case "16:9":
-      fontSize = "2rem";
+      fontSize = "2.1rem";
       break;
     case "9:16":
-      fontSize = "1.2rem";
+      fontSize = "1.4rem";
       break;
     case "5:3":
-      fontSize = "1.8rem";
+      fontSize = "2rem";
       break;
     case "3:4":
-      fontSize = "1.2rem";
+      fontSize = "1.4rem";
       break;
     case "1:1":
-      fontSize = "1.5rem";
+      fontSize = "1.6rem";
       break;
     default:
-      fontSize = "1.0rem";
+      fontSize = "1.2rem";
   }
   calendarEl.style.fontSize = fontSize;
 
@@ -724,11 +830,16 @@ function makeColorPaler(hex, factor = 0.3) {
       updateCalendarDimensions();
       
       // Listen for changes in the dropdown to adjust dimensions accordingly.
-      document.getElementById('heightRatioDropdown').addEventListener('change', function(){
+      document.getElementById('heightRatioDropdown').addEventListener('change', function() {
         calendar.refetchEvents();
         updateCalendarDimensions();
         calendar.updateSize();
         scaleTimeline();
+
+        // Update URL only if not initializing
+        if (!isInitializing) {
+          updateURL({ ratio: this.value });
+        }
       });
       
       // Function to determine the day header format based on toggle state.
@@ -742,19 +853,35 @@ function makeColorPaler(hex, factor = 0.3) {
       var calendarEl = document.getElementById('calendar');
       var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'timeGridWeek',
+        initialDate: initialDate || new Date(), // Default to today if no parameters
         height: fixedHeight,
         headerToolbar: { left: '', center: '', right: 'prev,next' },
         datesSet: function(dateInfo) {
-    scaleTimeline();
-    calendar.refetchEvents();
-    updateCalendarDimensions();
-    calendar.updateSize();
-      // Reapply the classic theme styles if selected.
-  const themeKey = document.getElementById('colorThemeDropdown').value;
-  applyTheme(themeKey);
+          scaleTimeline();
+          calendar.refetchEvents();
+          updateCalendarDimensions();
+          calendar.updateSize();
+          applyTheme(document.getElementById('colorThemeDropdown').value);
 
+          // Capture current week's start and end dates
+          const weekStart = dateInfo.start.toISOString().split('T')[0];
+          const weekEnd = dateInfo.end.toISOString().split('T')[0];
+          
+          // Update URL with weekStart and weekEnd parameters
+          if (!isInitializing) {
+            updateURL({ weekStart, weekEnd });
+            
+          }
+          
+
+
+        },
+        eventsSet: function() {
+    if (window.location.search.includes('download') && !downloadTriggered) {
+      downloadTriggered = true;
+      setTimeout(() => generateAndSaveImage(), 3000);
+    }
   },
-
         allDaySlot: false,
         slotMinTime: "08:00:00",
         slotMaxTime: "19:00:00",
@@ -951,9 +1078,11 @@ info.el.style.overflow = 'hidden';
       
       // Render the calendar.
       calendar.render();
+scaleTimeline(); // Ensure scaling is applied
 
-      
-      
+    
+
+
       // Function to scale the timeline to fit inside the 320x600 viewport.
       function scaleTimeline() {
         calendar.setOption('dayHeaderFormat', getDayHeaderFormat());
@@ -1002,14 +1131,18 @@ info.el.style.overflow = 'hidden';
         scaleTimeline();
 
 
-
-// Listen for changes on the color theme dropdown
+      
+  // Listen for changes on the color theme dropdown
 document.getElementById('colorThemeDropdown').addEventListener('change', function() {
   applyTheme(this.value);
   updateAdditionalThemeElements();
-        // Re-fetch events to update their rendering with the new theme
-        calendar.refetchEvents();
-        scaleTimeline();
+  calendar.refetchEvents();
+  scaleTimeline();
+
+  // Update URL only if not initializing
+  if (!isInitializing) {
+    updateURL({ theme: this.value });
+  }
 });
       scaleTimeline();
       
@@ -1024,6 +1157,11 @@ document.getElementById('colorThemeDropdown').addEventListener('change', functio
           }
           calendar.refetchEvents();
           scaleTimeline();
+
+          // Update URL only if not initializing
+          if (!isInitializing) {
+            updateURL({ [toggle.id]: toggle.checked ? '1' : '0' });
+          }
         });
       });
       
@@ -1044,20 +1182,26 @@ document.getElementById('colorThemeDropdown').addEventListener('change', functio
       });
       
       timeSlider.noUiSlider.on('change', function (values) {
-        let startHour = values[0];
-        let endHour = values[1];
-        document.getElementById('timeRangeStartLabel').innerText = (startHour < 10 ? "0" : "") + startHour + ":00";
-        document.getElementById('timeRangeEndLabel').innerText = (endHour < 10 ? "0" : "") + endHour + ":00";
+        const startHour = values[0];
+        const endHour = values[1];
+        document.getElementById('timeRangeStartLabel').innerText = 
+          (startHour < 10 ? "0" : "") + startHour + ":00";
+        document.getElementById('timeRangeEndLabel').innerText = 
+          (endHour < 10 ? "0" : "") + endHour + ":00";
         calendar.setOption('slotMinTime', startHour + ":00:00");
         calendar.setOption('slotMaxTime', endHour + ":00:00");
         calendar.refetchEvents();
         updateCalendarDimensions();
         calendar.updateSize();
         scaleTimeline();
-      });
-      
-      window.addEventListener('resize', scaleTimeline);
 
+        // Update URL only if not initializing
+        if (!isInitializing) {
+          updateURL({ timeStart: startHour, timeEnd: endHour });
+        }
+      });
+
+      window.addEventListener('resize', scaleTimeline);
     });
 
     function updateAdditionalThemeElements() {
