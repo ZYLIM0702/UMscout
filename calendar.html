@@ -488,7 +488,6 @@ if (theme.calendarBackground) {
 }
 
 // Add border radius and overflow hidden
-calendarEl.style.borderRadius = '30px';
 calendarEl.style.overflow = 'hidden';
 
 
@@ -603,6 +602,7 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 } else {
   eventColor = makeColorPaler(theme.eventBackground, 0.4);
 }const backgroundColor = selectedPadding === 0 ? null : eventColor;
+calendarEl.style.borderRadius = '50px';
 
   // Capture the calendar element with transparency
   html2canvas(calendarEl, {
@@ -653,11 +653,12 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
 
     // Convert cropped canvas to a data URL
     const base64Image = croppedCanvas.toDataURL('image/png');
-    document.body.appendChild(croppedCanvas);
     if (window.ImageChannel && window.ImageChannel.postMessage) {
       window.ImageChannel.postMessage(base64Image);
     }
   });
+  calendarEl.style.borderRadius = '20px';
+
 });
 
 
