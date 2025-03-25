@@ -545,90 +545,84 @@ window._base64Image = "";
 function getImageData() {
   return window._base64Image || "";
 }
-
 document.getElementById('saveImageBtn').addEventListener('click', function() {
   const calendarEl = document.getElementById('calendar');
-const headerEl = calendarEl.querySelector('.fc-header-toolbar');
+  const headerEl = calendarEl.querySelector('.fc-header-toolbar');
 
-// Temporarily hide the header
-if (headerEl) {
-  headerEl.style.visibility = 'hidden';
-}
-
-htmlToImage.toCanvas(calendarEl, {
-  pixelRatio: 20, // Lower this to a reasonable value (e.g., 2 for HD)
-  backgroundColor: null,
-  quality:1,
-  
-  useCORS: true
-}).then(canvas => {
-  // Restore the header after capturing
+  // Temporarily hide the header
   if (headerEl) {
-    headerEl.style.visibility = '';
+    headerEl.style.visibility = 'hidden';
   }
 
-  const ctx = canvas.getContext('2d');
-  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const pixels = imgData.data;
-  const width = canvas.width;
-  const height = canvas.height;
+  htmlToImage.toCanvas(calendarEl, {
+    pixelRatio: 20, // Adjust to a reasonable value
+    backgroundColor: null,
+    quality: 1,
+    useCORS: true
+  }).then(canvas => {
+    // Restore the header after capturing
+    if (headerEl) {
+      headerEl.style.visibility = '';
+    }
 
-  // Find the bounding box of the content
-  let left = width;
-  let right = 0;
-  let top = height;
-  let bottom = 0;
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = imgData.data;
+    const width = canvas.width;
+    const height = canvas.height;
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const index = (y * width + x) * 4;
-      const alpha = pixels[index + 3];
-      if (alpha !== 0) {
-        if (x < left) left = x;
-        if (x > right) right = x;
-        if (y < top) top = y;
-        if (y > bottom) bottom = y;
+    // Find the bounding box of the content
+    let left = width, right = 0, top = height, bottom = 0;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const index = (y * width + x) * 4;
+        const alpha = pixels[index + 3];
+        if (alpha !== 0) {
+          if (x < left) left = x;
+          if (x > right) right = x;
+          if (y < top) top = y;
+          if (y > bottom) bottom = y;
+        }
       }
     }
+
+    // Calculate the content dimensions
+    const contentWidth = right - left + 1;
+    const contentHeight = bottom - top + 1;
+
+    // Create the cropped canvas
+    const croppedCanvas = document.createElement('canvas');
+    const croppedCtx = croppedCanvas.getContext('2d');
+
+    // Set dimensions to match the content's bounding box
+    croppedCanvas.width = contentWidth;
+    croppedCanvas.height = contentHeight;
+
+    // Copy the relevant portion of the original canvas
+    croppedCtx.drawImage(
+      canvas,
+      left, top, // Source position
+      contentWidth, contentHeight, // Source size
+      0, 0, // Destination position
+      contentWidth, contentHeight // Destination size
+    );
+
+    // Convert the cropped canvas to a Blob
+    croppedCanvas.toBlob(blob => {
+  if (blob) {
+    const url = URL.createObjectURL(blob);
+
+    // Send the URL to Flutter
+    if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
+      window.flutter_inappwebview.callHandler('ImageChannel', url);
+    }
   }
+}, 'image/png');
 
-  // Calculate the content dimensions
-  const contentWidth = right - left + 1;
-  const contentHeight = bottom - top + 1;
-
-  // Create the cropped canvas
-  const croppedCanvas = document.createElement('canvas');
-  const croppedCtx = croppedCanvas.getContext('2d');
-
-  // Set dimensions to match the content's bounding box
-  croppedCanvas.width = contentWidth;
-  croppedCanvas.height = contentHeight;
-
-  // Copy the relevant portion of the original canvas
-  croppedCtx.drawImage(
-    canvas,
-    left, top, // Source position
-    contentWidth, contentHeight, // Source size
-    0, 0, // Destination position
-    contentWidth, contentHeight // Destination size
-  );
-
-  // Convert to data URL and trigger download
-  const base64Image = croppedCanvas.toDataURL('image/png');
-  window.history.replaceState(null, null, base64Image);
-
-
-  if (window.ImageChannel && window.ImageChannel.postMessage) {
-        window.ImageChannel.postMessage("Capture");
-      }
-      if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
-        window.flutter_inappwebview.calalHandler('ImageChannel', "Capture");
-      }
-
-// Create a download link
-
+  });
 });
-});
+
 
 function generateAndSaveImage() {
   const calendarEl = document.getElementById('calendar');
