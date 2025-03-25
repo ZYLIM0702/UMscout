@@ -385,7 +385,15 @@ body {
             <option value="3:4">3:4</option>
             <option value="1:1">1:1</option>
           </select>
-        
+      
+          <select id="paddingDropdown" style="padding: 6px; border-radius: 15px; border: none;">
+            <option value="none">None</option>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+            <option value="extraLarge">Extra Large</option>
+          </select>
+          
       </div>
     
   <!-- Slider and dropdown row -->
@@ -552,14 +560,30 @@ function getImageData() {
 document.getElementById('saveImageBtn').addEventListener('click', function() {
   const calendarEl = document.getElementById('calendar');
   const headerEl = calendarEl.querySelector('.fc-header-toolbar');
+  const paddingDropdown = document.getElementById('paddingDropdown');
+
+  // Define padding values
+  const paddingValues = {
+    none: 0,
+    small: 20,
+    medium: 50,
+    large: 100,
+    extraLarge: 150
+  };
+
+  const selectedPadding = paddingValues[paddingDropdown.value] || 0;
 
   // Temporarily hide the header
   if (headerEl) {
     headerEl.style.visibility = 'hidden';
   }
 
-  // Capture the calendar element
-  html2canvas(calendarEl, { scale: 10, backgroundColor: null, useCORS: true }).then(canvas => {
+  // Capture the calendar element with transparency
+  html2canvas(calendarEl, {
+    scale: 10, 
+    backgroundColor: null, 
+    useCORS: true
+  }).then(canvas => {
     // Restore the header after capturing
     if (headerEl) {
       headerEl.style.visibility = '';
@@ -586,22 +610,29 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
       }
     }
 
-    // Crop the canvas
+    // Crop the canvas and add padding
     const croppedCanvas = document.createElement('canvas');
     const croppedCtx = croppedCanvas.getContext('2d');
     const height = canvas.height - top;
 
-    croppedCanvas.width = canvas.width;
-    croppedCanvas.height = height;
-    croppedCtx.putImageData(ctx.getImageData(0, top, canvas.width, height), 0, 0);
+    croppedCanvas.width = canvas.width + selectedPadding * 2;
+    croppedCanvas.height = height + selectedPadding * 2;
+
+    // Ensure transparency is preserved
+    croppedCtx.clearRect(0, 0, croppedCanvas.width, croppedCanvas.height);
+
+    // Draw the cropped image onto the new canvas with padding
+    croppedCtx.putImageData(ctx.getImageData(0, top, canvas.width, height), selectedPadding, selectedPadding);
 
     // Convert cropped canvas to a data URL
     const base64Image = croppedCanvas.toDataURL('image/png');
-  if (window.ImageChannel && window.ImageChannel.postMessage) {
-    window.ImageChannel.postMessage(base64Image);
-  }
-      });
+    
+    if (window.ImageChannel && window.ImageChannel.postMessage) {
+      window.ImageChannel.postMessage(base64Image);
+    }
+  });
 });
+
 
 let isInitializing = true; // Flag to prevent URL update loops during initialization
 
@@ -736,6 +767,8 @@ isInitializing = false;
     // Initialize custom dropdowns for the desired elements
     initCustomDropdown('colorThemeDropdown');
     initCustomDropdown('heightRatioDropdown');
+    initCustomDropdown('paddingDropdown');
+
       
       // Compute fixed width based on the ratio dropdown
       function updateCalendarDimensions() {
