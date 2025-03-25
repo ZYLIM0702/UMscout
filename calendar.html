@@ -585,8 +585,8 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     none: 0,
     small: 200,
     medium: 450,
-    large: 900,
-    extraLarge: 1800
+    large: 600,
+    extraLarge: 900
   };
 
   const selectedPadding = paddingValues[paddingDropdown.value] || 0;
@@ -603,7 +603,7 @@ const backgroundColor = selectedPadding === 0 ? null : eventColor;
 
   // Capture the calendar element with transparency
   html2canvas(calendarEl, {
-    scale: 9, 
+    scale: 10, 
     backgroundColor: backgroundColor, 
     useCORS: true
   }).then(canvas => {
