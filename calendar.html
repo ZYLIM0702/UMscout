@@ -902,7 +902,7 @@ function makeColorPaler(hex, factor = 0.3) {
     let eventColor;
     if (selectedTheme === "classic") {
   eventColor = "#fcca46"; // Classic yellow
-  eventColorPale = eventColor;
+  eventColorPale = makeColorPaler(eventColor, 0.1);
 
 } else if (selectedTheme === "beigeTan") {
   eventColor = "#8b5e3c"; // Warm brown
@@ -921,8 +921,8 @@ function makeColorPaler(hex, factor = 0.3) {
   eventColorPale = makeColorPaler(eventColor, 0.2);
 
 } else if (selectedTheme === "blackWhite") {
-  eventColor = "#ffffff"; // White
-  eventColorPale = makeColorPaler(eventColor, 0.2);
+  eventColor = "white"; // White
+  eventColorPale = eventColor; // No further lightening needed
 
 } else {
   eventColor = vevent.component.getFirstPropertyValue("color")
@@ -933,7 +933,7 @@ function makeColorPaler(hex, factor = 0.3) {
 
     // Optionally, make the color a bit paler for the background
 
-                    let eventtype = vevent.component.getFirstPropertyValue("categories") || "";
+                    let eventtype = vevent.component.getFirstPropertyValue("categories") || " ";
                     
                     fcEvents.push({
                       title: courseCode,
@@ -958,15 +958,15 @@ function makeColorPaler(hex, factor = 0.3) {
     let eventColor;
     if (selectedTheme === "classic") {
   eventColor = "#fcca46"; // Classic yellow
-  eventColorPale = eventColor;
+  eventColorPale = makeColorPaler(eventColor, 0.1);
 
 } else if (selectedTheme === "beigeTan") {
   eventColor = "#8b5e3c"; // Warm brown
   eventColorPale = makeColorPaler(eventColor, 0.2);
 
 } else if (selectedTheme === "tealOrange") {
-  eventColor = "#ffa500"; // Bright orange
-  eventColorPale = makeColorPaler(eventColor, 0.2);
+  eventColor = "#ffaa45"; // Bright orange
+  eventColorPale = eventColor;
 
 } else if (selectedTheme === "midnightPurple") {
   eventColor = "#d8b5ff"; // Soft pastel purple
@@ -976,6 +976,10 @@ function makeColorPaler(hex, factor = 0.3) {
   eventColor = "#c8e6c9"; // Light green
   eventColorPale = makeColorPaler(eventColor, 0.2);
 
+} else if (selectedTheme === "blackWhite") {
+  eventColor = "white"; // White
+  eventColorPale = eventColor; // No further lightening needed
+
 } else {
   eventColor = vevent.component.getFirstPropertyValue("color")
                ? `#${vevent.component.getFirstPropertyValue("color").slice(2)}`
@@ -983,7 +987,7 @@ function makeColorPaler(hex, factor = 0.3) {
   eventColorPale = makeColorPaler(eventColor, 0.2);
 }
 
-                    let eventtype = vevent.component.getFirstPropertyValue("categories") || "";
+                    let eventtype = vevent.component.getFirstPropertyValue("categories") || " ";
 
                     
                     fcEvents.push({
@@ -1020,7 +1024,11 @@ info.el.style.overflow = 'hidden';
     // Deconstruct extended props from the event (from ICS parsing)
     const { courseCode, courseName, occ, lecturer, location, eventtype, eventColor } = info.event.extendedProps;
         // Build event content – override event colors if a theme is active (e.g. classic)
-        let usedEventColor = theme.eventBackground ? theme.eventBackground : eventColor;
+        console.log(theme.eventBackground);
+        let usedEventColor = 
+    (theme.eventBackground === "#ffffff" || eventColor === "white") ? "#EDECEC" : 
+    (theme.eventBackground ? theme.eventBackground : eventColor);
+
     let usedTextColor = theme.eventTextColor ? theme.eventTextColor : '#000';
 
   // Build the content as a flex container with two parts: top and bottom.
@@ -1038,9 +1046,9 @@ info.el.style.overflow = 'hidden';
     if (document.getElementById('toggleLocation').checked)
       content += `<div style="color:${usedTextColor};">Location: ${location}</div>`;
     if (document.getElementById('toggleOCC').checked)
-      content += `<div style="text-align:left; background-color:${usedEventColor};color:${usedTextColor}; border-radius:20px; margin-top:4px;margin-right:5px; padding:3px 8px; display:inline-block; font-weight:bold;border:2px solid ${makeColorPaler(usedTextColor,0.8)}">${occ}</div>`;
+      content += `<div style="text-align:left; background-color:${usedEventColor};color:${usedTextColor}; border-radius:20px; margin-top:4px;margin-right:5px; padding:3px 8px; display:inline-block; font-weight:bold;">${occ}</div>`;
     if (document.getElementById('toggleCategory').checked)
-      content += `<div style="text-align:left; background-color:${usedEventColor};color:${usedTextColor}; border-radius:20px; margin-top:4px; padding:3px 8px; display:inline-block; font-weight:bold;border:2px solid ${makeColorPaler(usedTextColor,0.8)}">${eventtype}</div>`;
+      content += `<div style="text-align:left; background-color:${usedEventColor};color:${usedTextColor}; border-radius:20px; margin-top:4px; padding:3px 8px; display:inline-block; font-weight:bold;">${eventtype}</div>`;
     
     content += `</div>`;
 
