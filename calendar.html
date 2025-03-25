@@ -612,32 +612,22 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
       contentWidth, contentHeight // Destination size
     );
 
-    // Convert the cropped canvas to a Blob
-    croppedCanvas.toBlob(blob => {
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        
-        // Notify Flutter
-        if (window.ImageChannel && window.ImageChannel.postMessage) {
+            // Notify Flutter
+            if (window.ImageChannel && window.ImageChannel.postMessage) {
           window.ImageChannel.postMessage("Capture");
         }
         if (window.flutter_inappwebview && window.flutter_inappwebview.callHandler) {
           window.flutter_inappwebview.callHandler('ImageChannel', "Capture");
         }
         
-        // Create a download link
+        const imageData = croppedCanvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.href = url;
+        link.href = imageData;
         link.download = `UMscout_Timetable_${Date.now()}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
-        // Revoke the URL after download
-        URL.revokeObjectURL(url);
-      }
-    }, 'image/png');
-  });
+      });
 });
 
 
