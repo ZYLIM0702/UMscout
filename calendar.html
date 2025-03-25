@@ -474,6 +474,7 @@ body {
   }
 
 };
+let paddingbackgroundcolor = "#fff";
 
 // Helper function to apply the selected theme
 function applyTheme(themeKey) {
@@ -578,6 +579,8 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     headerEl.style.visibility = 'hidden';
   }
 
+  const eventColor =
+
   // Capture the calendar element with transparency
   html2canvas(calendarEl, {
     scale: 10, 
@@ -618,8 +621,9 @@ document.getElementById('saveImageBtn').addEventListener('click', function() {
     croppedCanvas.width = canvas.width + selectedPadding * 2;
     croppedCanvas.height = height + selectedPadding * 2;
 
-    // Ensure transparency is preserved
-    croppedCtx.clearRect(0, 0, croppedCanvas.width, croppedCanvas.height);
+    // Fill the background with the event color
+    croppedCtx.fillStyle = eventColor;
+    croppedCtx.fillRect(0, 0, croppedCanvas.width, croppedCanvas.height);
 
     // Draw the cropped image onto the new canvas with padding
     croppedCtx.putImageData(ctx.getImageData(0, top, canvas.width, height), selectedPadding, selectedPadding);
@@ -1055,6 +1059,7 @@ info.el.style.overflow = 'hidden';
     // Deconstruct extended props from the event (from ICS parsing)
     const { courseCode, courseName, occ, lecturer, location, eventtype, eventColor } = info.event.extendedProps;
         // Build event content – override event colors if a theme is active (e.g. classic)
+        paddingbackgroundcolor = makeColorPaler(theme.calendarBackground, 0.4);
         console.log(theme.eventBackground);
         let usedEventColor = 
     (theme.eventBackground === "#ffffff" || eventColor === "white") ? "#EDECEC" : 
