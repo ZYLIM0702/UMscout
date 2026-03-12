@@ -537,14 +537,93 @@ function makeColorPaler(hex, factor = 0.3) {
 }
 
 
+function safeDecode(value) {
+  if (!value) return value;
+  try {
+    return decodeURIComponent(value);
+  } catch (err) {
+    return value;
+  }
+}
+
+const CORS_FALLBACK_BASES = [
+  'https://api.allorigins.win/raw?url=',
+  'https://api.cors.lol/?url=',
+  'https://corsproxy.io/?url='
+];
+
+function buildCorsProxyUrls(targetUrl) {
+  return CORS_FALLBACK_BASES.map(base => `${base}${encodeURIComponent(targetUrl)}`);
+}
+
+function resolveIcsUrl(raw) {
+  if (!raw) return { primary: null, fallbacks: [] };
+
+  let cleaned = raw.trim();
+  if (/%[0-9A-Fa-f]{2}/.test(cleaned)) {
+    cleaned = safeDecode(cleaned);
+  }
+
+  try {
+    const parsed = new URL(cleaned);
+    const isCorsProxy = parsed.hostname === 'corsproxy.io' || parsed.hostname.endsWith('.corsproxy.io');
+    const isCorsLol = parsed.hostname === 'api.cors.lol' || parsed.hostname.endsWith('.cors.lol');
+    const isAllOrigins = parsed.hostname === 'api.allorigins.win' || parsed.hostname.endsWith('.allorigins.win');
+    const inner = parsed.searchParams.get('url');
+    if ((isCorsProxy || isCorsLol || isAllOrigins) && inner) {
+      let decodedInner = inner;
+      if (/%[0-9A-Fa-f]{2}/.test(decodedInner)) {
+        decodedInner = safeDecode(decodedInner);
+      }
+      return { primary: decodedInner, fallbacks: buildCorsProxyUrls(decodedInner) };
+    }
+  } catch (err) {
+    // Ignore invalid URL parse errors
+  }
+
+  // Not a proxy URL: try direct first, then a proxy fallback.
+  return { primary: cleaned, fallbacks: buildCorsProxyUrls(cleaned) };
+}
+
+function fetchIcsWithFallback(urlList) {
+  let index = 0;
+
+  function tryNext() {
+    if (index >= urlList.length) {
+      return Promise.reject(new Error('All ICS fetch attempts failed'));
+    }
+    const url = urlList[index++];
+    console.log('Fetching ICS from:', url);
+    return fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Network response was not ok (${response.status})`);
+        }
+        return response.text();
+      })
+      .catch(error => {
+        console.warn('ICS fetch failed:', url, error);
+        return tryNext();
+      });
+  }
+
+  return tryNext();
+}
+
 const urlParams = new URLSearchParams(window.location.search);
-const icsUrl = urlParams.get('icsUrl');
+const rawIcsUrl = urlParams.get('icsUrl');
+const { primary: icsUrl, fallbacks: icsUrlFallbacks } = resolveIcsUrl(rawIcsUrl);
+const icsUrlCandidates = [icsUrl, ...icsUrlFallbacks].filter(Boolean);
 var downloadTriggered = false; // Prevents multiple downloads
 
 
-function getCacheICS(url, cacheDuration = 180) {
-  const cacheKey = 'cachedICS';
-  const timestampKey = 'cachedICSTimestamp';
+function getCacheICS(urls, cacheDuration = 180) {
+  const urlList = (Array.isArray(urls) ? urls : [urls]).filter(Boolean);
+  if (!urlList.length) {
+    return Promise.reject(new Error('Missing icsUrl parameter'));
+  }
+  const cacheKey = `cachedICS:${urlList[0]}`;
+  const timestampKey = `cachedICSTimestamp:${urlList[0]}`;
 
   // Check for cached data
   const cachedData = localStorage.getItem(cacheKey);
@@ -558,14 +637,8 @@ function getCacheICS(url, cacheDuration = 180) {
     }
   }
 
-  // If no valid cache exists, fetch new data
-  return fetch(url)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.text();
-    })
+  // If no valid cache exists, fetch new data (with fallbacks)
+  return fetchIcsWithFallback(urlList)
     .then(data => {
       localStorage.setItem(cacheKey, data);
       localStorage.setItem(timestampKey, Date.now().toString());
@@ -922,7 +995,7 @@ isInitializing = false;
         expandRows: true,
         weekends: document.getElementById('toggleWeekend').checked,
         events: function(fetchInfo, successCallback, failureCallback) {
-          getCacheICS(icsUrl)
+          getCacheICS(icsUrlCandidates)
     .then(data => {
               const jcalData = ICAL.parse(data);
               const comp = new ICAL.Component(jcalData);
